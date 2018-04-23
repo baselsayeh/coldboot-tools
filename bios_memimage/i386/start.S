@@ -57,7 +57,6 @@ setcs:
 
         mov     $boot, %sp
 
-#ifdef notdef
 	/*
          * See if BIOS supports 'fast' A20 method.
          * Note: this BIOS call, at least on my laptop, has been
@@ -86,7 +85,6 @@ setcs:
 	jmp	A20alreadyset
 
 no_fast:
-#endif
 
 	/* Issue command to read output port. */
 
@@ -174,12 +172,12 @@ s2:
 
 	call	FUNC(_main)
 
-#ifndef SILENT
+/* #ifndef SILENT //crashing
 	/* If the main routine returns, reboot the system. */
 
-	push	$reboot
+	/*push	$reboot
 	call	FUNC(printf)
-#endif
+#endif */
 
 	/* Try to do a powerdown first. */
 
@@ -191,9 +189,12 @@ s2:
          * interrupt.
 	 */
 
+//halt always
+/*
 	sti
 	lidt	EXT(IDESC)
 	int	$0x6
+*/
 
 	/* If that didn't work, just hang. */
 
