@@ -1,0 +1,17 @@
+This code is incomplete and only works for 32-bit EFI.  It contains
+the following pieces:
+
+- EFI core library
+- GNU EFI bootstrap/runtime relocation code
+- standard C library code (from EFI development kit)
+- BSD TCP/IP stack (from EFI development kit)
+- BSD sockets library (from EFI development kit)
+- hacked up TFTP library (stolen from U-BOOT, used for the VxWorks loader)
+- VxWorks bootstrap loader (my own little experiment)
+- Unfinished EFI scraper app framework
+
+Note also that to build the EFI code, you need a version of binutils that's
+targeted to produce EFI IA32 binaries (efi-app-ia32 backend). I think
+Linux has this support in its native version of GCC/binutils by default,
+but FreeBSD doesn't, so I had to build my own version of binutils. This
+is not hard to do.

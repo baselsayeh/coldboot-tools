@@ -1,0 +1,12 @@
+
+ARCH = ia32
+LIBGCC = ../libgcc/libgcc.a
+prefix = /usr/local/efi/bin/
+CC = cc
+AS = $(prefix)as
+LD = $(prefix)ld
+AR = $(prefix)ar
+RANLIB = $(prefix)ranlib
+OBJCOPY = $(prefix)objcopy
+STRIP = $(prefix)strip
+CFLAGS = -O2 -fpic -Wall -fshort-wchar -fno-strict-aliasing -fno-merge-constants -fno-builtin

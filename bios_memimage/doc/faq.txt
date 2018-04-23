@@ -1,0 +1,295 @@
+
+Q: What machines will the PXE scraper work on?
+A: The scraper code will run on any x86 system that has PXE support. This
+   includes systems with built-in NICs and PXE-capable BIOSes and older
+   systems with add in ethernet cards that have their own PXE ROMs (i.e.
+   the Intel PRO/100 NIC with management support).
+
+Q: What systems have you tested the scraper code on?
+A: My laptop (Averatec Intel Celeron processor with RealTek 10/100 NIC)
+   Sun w2100z Javastation (dual AMD Opteron, Broadcom BCM5703 NIC)
+   IBM ThinkPad (also Broadcom NIC)
+   Intel Cappel Valley development board (Intel PRO/1000 NIC)
+   Soekris net4801 board (NatSemi DP83816 NIC)
+
+Q: Doesn't the scraper binary overwrite some of the target's memory itself?
+A: Yes, but there's no getting around that. It's designed to use as little
+   memory as possible. A typical binary image is only about 8K in size.
+   (And yes, the scraper will capture an image of itself.)
+
+Q: Are 64-bit systems supported?
+A: Yes. Both the PXE and disk based scrapers can be built either as
+   32-bit or 64-bit executables. The 64-bit versions will run on any
+   x86-64 system, including those with AMD Opteron, AMD Athlon 64,
+   Intel Xeon and Intel Core 2 Duo CPUs.
+
+Q: Will the 32-bit scraper work on 64-bit systems?
+A: Yes, but it will only run in 32-bit mode, and as such it won't be
+   able to access the entire 64-bit address space. (This means it will
+   only be able to access 3.5GB of RAM, even if your 64-bit system has
+   more than that.) If your 64-bit target system has less than 4GB of
+   RAM, then there's really no need to use the 64-bit scraper anyway.
+
+Q: Are there any limitations to the 64-bit version?
+A: In order to access more than 4GB of address space, an x86-64 CPU must
+   run in long mode, and paging must be enabled. Paging requires the use
+   of page tables, which consume additional memory. The bare minimum
+   configuration requires 3 4K page directories, which allows access to
+   up to 1GB of RAM. (Each page table contains 512 entries, and pages can
+   be either 4KB or 2MB in size. Using the 2MB page size, 2MB times 512
+   yields 1GB.) Once the first 640K segment of RAM has been dumped, both
+   scraper programs will populate an additional 63 page tables and add them
+   to the page directory, which provides access to up to 64GB of RAM.
+   It is possible to increase this limit by modifying the code in
+   bios-pc/x86-64/memmap.c, but 64GB is considered to be a reasonable
+   limit for the time being.
+
+Q: Will I be able to capture a useful memory dump from any system?
+A: Not necessarily, no. The amount of time data will remain viable in
+   RAM once power is removed varies enormously depending on a number
+   of factors, including the memory chip design, presence (or absence)
+   of filter capacitors, resistive loading, and even how hot the chips
+   are (cooler chips tend to retain their contents longer). Also, the
+   BIOS may destroy the contents of RAM immediately on startup. In some
+   cases, this is due only to a memory test, which is sometimes optional
+   and can be disabled. In other cases, it's because the system has ECC
+   RAM.
+
+Q: Why does it make a difference if I have ECC memory?
+A: ECC memory typically must be "scrubbed" (i.e. its entire contents
+   overwritten with zeros) by system bootstrap software before ECC
+   support can be enabled in the system memory controller. When the RAM
+   module is first powered up, all of its bits -- including the parity
+   bits used to detect memory errors -- are in unknown, garbage states.
+   If error detection is turned on before the RAM is scrubbed, the
+   uninitialized parity bits will signal false parity errors. To avoid
+   this, every memory cell must be written at least once prior to
+   enabling the error correction hardware in order to initialize all of
+   the parity bits to valid states. Unfortunately, this has the effect
+   of destroying whatever may have been in the memory to begin with.
+
+Q: Can I get around the ECC memory scrubbing?
+A: Some BIOSes offer a configuration option to disable ECC support. This
+   may also prevent the BIOS from scrubbing the RAM.
+
+Q: Do many PCs have ECC memory?
+A: Surprisingly, no. ECC memory is expensive, and as such it's used mainly
+   in high availability systems (such as servers).
+
+Q: Why doesn't the scraper code build on MacOS X?
+A: While the C compiler and assembler supplied with the Apple Xcode
+   distribution can compile the scraper code, I have yet to find a
+   way to convince the linker to link it properly. Also, the Xcode
+   environment does not include a full set of GNU binutils: most notably,
+   objcopy is missing. Without it, there's no way to generate a flat
+   binary image from the linked scraper executable.
+
+Q: Does that mean MacOS X can't be used at all?
+A: No: you can still use MacOS X to build the scraper, but first you'll
+   need to build a GCC cross compilation environment. This is not that
+   hard to do, since the scraper code does not need libgcc (which is
+   usually the hardest thing to generate when building a cross compiler).
+   If you build a cross compiler (and a set of GNU binutils) targeted for
+   i386-elf, you should be able to compile and link the scraper. Similarly,
+   a compiler and binutils targeted for x86_64-elf can be used to build
+   the 64-bit version.
+
+Q: Is the scraper a miniature operating system?
+A: No, it's a standalone program. It's entirely single-threaded: it does
+   not support multitasking, interrupt handling or memory protection.
+
+Q: I want to write my own OS. Will you help me?
+A: No.
+
+Q: How does the power down feature work?
+A: When the scraper quits, it attempts to shut down the system using
+   an APM BIOS call. An APM power-off should work on any system that
+   supports APM BIOS version 1.1 or later. (It works on my laptop
+   which has an AMP 1.2 BIOS.) This is not guaranteed to work however,
+   because APM has largely been deprecated in favor of ACPI. Sadly,
+   it's not practical to add ACPI support to the scraper. If the target
+   system has no APM BIOS, the scraper will trigger a CPU reset instead,
+   which should reboot the system.
+
+Q: Can I build this code on Windows?
+A: You can build the 32-bit versions of the PXE and USB scrapers, if you
+   install the Cygnus tools from www.cygwin.com or the MinGW tools from
+   www.mingw.org. Building the 64-bit versions has not been tested on
+   Windows, but will likely require building a cross compiler.
+
+Q: I want to modify/improve/experiment with this code, but the
+   compile/test/reboot cycle is very time consuming/tedious. Is
+   there a better way?
+A: Yes: I strongly recommend you use the QEMU simulator instead of real
+   hardware for testing (http://fabrice.bellard.free.fr/qemu). Version 0.9.0
+   and later support PXE simulation, network simulation, and support for
+   remote debugging via GDB. You need to set up the 'tap' pseudo-interface
+   driver in your OS to be able to load the scraper into the simulator via
+   simulated PXE. I typically use a command similar to the following to
+   launch qemu:
+
+   # qemu -boot n -net nic,macaddr=0:0:e8:1:2:3,model=rtl8139 -net tap
+     -S -s -p 1234 /dev/null
+
+   This launches the simulator, but freezes the CPU at startup to allow
+   time to attach gdb. To debug the code, you should compile it with the
+   -g option (which is not done by default) and then do:
+
+   % gdb scraper
+   (gdb) target remote localhost:1234
+   (gdb) c
+
+   You can also debug from the QEMU monitor, which can be accessed by typing
+   CTRL-ALT-2 in the QEMU window. (CTRL-ALT-1 returns to the main display.)
+
+Q: How can I build a 64-bit cross compiler that can be used to build the
+   64-bit scraper code?
+A: I used the following steps, which should work for you:
+
+   - Download the following packages:
+
+     ftp://ftp.gnu.org/pub/gnu/gcc/gcc-4.3.0/gcc-core-4.3.0.tar.bz2
+     ftp://ftp.gnu.org/pub/gnu/binutils/binutils-2.18.tar.bz2
+     ftp://gcc.gnu.org/pub/gcc/infrastructure/gmp-4.2.1.tar.gz
+     ftp://gcc.gnu.org/pub/gcc/infrastructure/mpfr-2.3.0.tar.bz2
+
+     GCC 4.3.0 and binutils 2.18 are the latest available as of this
+     writing. Earlier versions may also work, however these were the
+     versions which were used in development. The GMP and MPFR libraries
+     are required to compile GCC 4.3.0. If you already have them on
+     your system, you can skip downloading and installing the,
+
+   - Build and install the GMP library first:
+
+     % cat gmp-4.2.1.tar.gz | gzip -d | tar -xvf -
+     % cd gmp-4.2.1
+     % configure --prefix=/usr/local/gnu
+     % gmake
+     % gmake install
+   
+   - Build and install the mpfr library next:
+
+     % cat mpfr-2.3.0 | gzip -d | tar -xvf -
+     % cd mpfr-2.3.0
+     % configure --prefix=/usr/local/gnu --with-gmp=/usr/local/gnu
+     % gmake
+     % gmake install
+
+     Note that you may find shared versions of the GMP and MPFR libraries
+     have been built as well. These will end up in /usr/local/gnu/lib. If
+     /usr/local/gnu/lib isn't in your LD_LIBRARY_PATH, then gcc, when linked
+     against the shared versions of the libraries, may complain that it
+     can't find them. You can either set your LD_LIBRARY_PATH to include
+     /usr/local/gnu/lib, or you can move the shared libraries somewhere
+     that the linker won't see them, leaving just the static libraries
+     behind:
+
+     % cd /usr/local/gnu/lib
+     % mkdir shared
+     % mv *.so* shared
+
+   - Build and install a set of binutils targeted for x86_64-elf:
+
+     % cat binutils-2.18.tar.bz2 | bzip2 -d | tar -xvf -
+     % cd binutils-2.18
+     % mkdir mycrossbuild
+     % cd mycrossbuild
+     % ../configure --prefix=/usr/local/gnu --target=x86_64-elf
+     % gmake
+     % gmake install
+
+   - Lastly, build and install GCC. GCC 4.3.0 wants to link against the
+     GMP and MPFR libraries. The following instructions assume that
+     they've been installed in /usr/local/gnu as shown above:
+
+     % cat gcc-core-4.3.0.tar.bz2 | bzip2 -d | tar -xvf -
+     % cd gcc-4.3.0
+     % mkdir mycrossbuild
+     % cd mycrossbuild
+     % ../configure --prefix=/usr/local/gnu --target=x86_64-elf --with-gmp=/usr/local/gnu --with-mpfr=/usr/local/gnu
+     % gmake
+     % gmake install
+     % cd x86_64-elf/libgcc
+     % gmake install
+
+     Note that the GCC cross compilation will probably not complete (it
+     will fail when it gets to libssp). This is fine: libssp expects a
+     runtime environment, but we don't have one. All we really need is
+     the C compiler itself. Note that the instructions above also install
+     libgcc, but we don't actually need it.
+
+  Once these steps are completed, a complete cross build environment
+  should be available in /usr/local/gnu. This is the procedure that was
+  used to build the cross compiler used for development on FreeBSD/x86.
+  It should work on Linux or MacOS too.
+
+Q: How do I set up an iPod memory dumper?
+A: Do the following:
+
+   1) Get an iPod
+   2) iPods were (and possibly still are) available in two flavors: Mac and
+      Windows. The difference between them is that the Mac flavored ones
+      have an Apple HFS+ filesystem and partitioning scheme, while the Windows
+      ones use a PC-style MBR partitioning scheme and FAT filesystem. In order
+      to boot a PC from an iPod, it will need to be configured for Windows
+      flavor. Either make sure to obtain a Windows flavor one, or be prepared
+      to reconfigure your Mac flavored one. (The procedure for this is not
+      too difficult, but does require deleting any music currently on the
+      device.)
+   3) A Windows flavored iPod has a partition table and two partitions:
+      partition 1 contains just the iPod's firmware, and partition 2 takes
+      up all remaining storage space and contains all of the iPod's music
+      and/or video files. You will need to repartition the iPod to reduce
+      the size of the music/video content partition so that you can create
+      a separate partition to hold memory dumps. Note that this will destroy
+      the contents of the existing data partition (unless you have a special
+      disk editing software that is smart enough to preserve it). If possible,
+      back up files on this partition so that you can restore them later.
+
+      You want to partition the iPod's disk so that it contains 3 partitions:
+
+      Partition 1] iPod firmware
+      Partition 2] iPod data (MSDOS/FAT)
+      Partition 3] <unused>
+      Partition 4] Memory dumps
+
+      Partition 4's type field can be anything: the scraper software doesn't
+      look at it. All that's important is that an entry for partition 4 exist
+      in the partition table in the master boot record, and that it be big
+      enough to hold memory dumps (say, 3 or 4GB, at least).
+   4) The USB scraper includes a special bootstrap loader, boot.bin, which
+      should be installed into the master boot record in sector 0. This boot
+      code should be used instead of the standard MS-DOS boot block. Exactly
+      how you install this code depends on what disk editing tool(s) you use.
+      With FreeBSD, it can be installed with the fdisk command:
+
+      # fdisk -b boot.bin -B da0
+
+   5) Dump the scraper.bin code into partition 4 of the iPod. In FreeBSD, this
+      can be done as follows:
+
+      # dd if=scraper.bin of=/dev/da0s4
+
+   6) Reset the iPod and make sure that it can still load its firmware and
+      operate correctly. The amount of available storage on the iPod will
+      be reduced, since some of the disk space is now dedicated for use by
+      the memory dumper. Restore your music files to the data partition (or
+      load new ones, if you didn't save the old ones).
+
+   7) Plug the iPod into a target machine, and reset it. Tell the BIOS to
+      boot from the iPod instead of the internal disk. The BIOS will load
+      the boot sector into RAM at address 0x7c00 and run it, just like a
+      normal OS bootstrap. The boot block will then load the scraper binary
+      from the start of partition 4 and start it running. It should
+      automatically dump the entire contents of RAM to the iPod on partition
+      4, immediately after the scraper code. The dump process just writes
+      the memory contents directly do the disk in raw form, without using
+      any filesystem formatting.
+
+   8) Plug the iPod back into your host system, and recover the memory dump
+      using the usbdump command. On FreeBSD, this can be done as follows:
+
+      # usbdump /dev/da0s4 > memdump
+
+   9) You can use the iPod to capture another dump at any time. Any previous
+      dump will be overwritten.

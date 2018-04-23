@@ -1,0 +1,15 @@
+#
+# Define the path to your 64-bit toolchain here.
+#
+
+#CC=		/usr/local/gnu/bin/x86_64-elf-gcc
+#AR=		/usr/local/gnu/bin/x86_64-elf-ar
+#AS=		/usr/local/gnu/bin/x86_64-elf-as
+#LD=		/usr/local/gnu/bin/x86_64-elf-ld
+#OBJCOPY=	/usr/local/gnu/bin/x86_64-elf-objcopy
+
+CC=		cc
+AR=		ar
+AS=		as
+AS=		ld
+OBJCOPY=	objcopy

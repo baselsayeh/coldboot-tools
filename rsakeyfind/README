@@ -1,0 +1,40 @@
+RSAKeyFinder 1.0 (2008-07-18)
+By Nadia Heninger and J. Alex Halderman
+
+This program illustrates automatic techniques for locating RSA
+private and public keys in a captured memory image, as described in
+Section 6.2 of the research paper:
+
+  J. A. Halderman, S. D. Schoen, N. Heninger, W. Clarkson, W. Paul,
+  J. A. Calandrino, A. J. Feldman, J. Appelbaum, and E. W. Felten.
+  "Lest We Remember: Cold-Boot Attacks on Encryption Keys."
+  Proc. 17th USENIX Security Symposium (Sec '08), San Jose, CA, July 2008.
+
+For more information, see: http://citp.princeton.edu/memory/
+
+
+There are two simple approaches:
+
+a) The first method requires a modulus from a known public key. The
+program searches for the modulus and attempts to parse the surrounding
+data as a BER-encoded public or private key.
+
+b) The second method does not require any knowledge of the key.  The
+program searches for a fixed pattern--the BER-encoded RSA version
+field followed by the integer type of the following field in an RSA
+key--and attempts to parse the surrounding data as a BER-encoded
+private key.
+
+We successfully tested these techniques on a Linux system running
+Apache 2.2.3 with mod_ssl.  However, RSA implementations that store
+keys in memory using a different format will not be susceptible.
+
+
+USAGE: 
+
+  rsakeyfind MEMORY-IMAGE [MODULUS-FILE]
+
+If MODULUS-FILE is specified, the program uses method (a) and attempts
+to locate private and public keys; the MODULUS-FILE should contain a
+hex-encoded version of the RSA modulus.  Otherwise, it uses method (b)
+and attempts to locate only private keys.

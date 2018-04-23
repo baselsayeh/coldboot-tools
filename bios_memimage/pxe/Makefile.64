@@ -1,0 +1,15 @@
+OBJS= ../x86-64/start.o data.o pxeapi.o main.o
+
+CFLAGS= -ffreestanding -Os -Wall -I../include -march=x86-64
+LDFLAGS= -L../stand -lstand -L../x86-64 -lx86-64
+ASFLAGS= -I../include
+
+include ../mk.64
+
+scraper.bin: $(OBJS)
+	$(LD) -Bstatic -Tlink.lds -o scraper $(OBJS) $(LDFLAGS)
+	$(OBJCOPY) -O binary scraper scraper.bin
+
+clean:
+	/bin/rm -f *.o scraper scraper.bin
+

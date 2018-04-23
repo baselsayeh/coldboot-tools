@@ -1,0 +1,29 @@
+all: subdirstand subdirx86-64 subdirpxe subdirusb subdirpxedump subdirusbdump
+
+subdirstand:
+	$(MAKE) -f Makefile.64 -C stand
+
+subdirx86-64:
+	$(MAKE) -C x86-64
+	
+subdirpxe:
+	$(MAKE) -f Makefile.64 -C pxe
+
+subdirusb:
+	$(MAKE) -f Makefile.64 -C usb
+
+subdirpxedump:
+	$(MAKE) -C pxedump
+
+subdirusbdump:
+	$(MAKE) -C usbdump
+
+clean:
+	$(MAKE) -C stand clean
+	$(MAKE) -C x86-64 clean
+	$(MAKE) -C i386 clean
+	$(MAKE) -C pxe clean
+	$(MAKE) -C usb clean
+	$(MAKE) -C pxedump clean
+	$(MAKE) -C usbdump clean
+

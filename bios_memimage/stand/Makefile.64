@@ -1,0 +1,17 @@
+
+OBJS=	subr_prf.o bcopy.o
+OBJS+=	bzero.o memmove.o memset.o memcmp.o memcpy.o memmove.o
+OBJS+=	strcpy.o strncpy.o strncmp.o strcmp.o strlen.o strcat.o
+OBJS+=	crc32.o
+
+include ../mk.64
+
+CFLAGS= -ffreestanding -Os -I../include -Wall -march=x86-64
+CFLAGS+= -fno-stack-protector
+
+libstand.a: $(OBJS)
+	$(AR) rcs libstand.a $(OBJS)
+
+clean:
+	/bin/rm -f *.o libstand.a
+

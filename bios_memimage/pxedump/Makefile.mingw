@@ -1,0 +1,10 @@
+OBJS= pxedump.o
+
+CFLAGS+= -I../include
+
+pxedump: $(OBJS)
+	$(CC) -o pxedump.exe pxedump.o -lwsock32 -liberty
+	strip pxedump.exe
+clean:
+	/bin/rm -f *.o pxedump.exe
+

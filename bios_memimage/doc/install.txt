@@ -1,0 +1,129 @@
+
+This distribution includes the source code for the PXE and USB memory
+scraper binaries and the pxedump and usbdump host side tools. The scrapers
+are standalone binary images that are meant to run directly on the target
+system. The PXE scraper is transferred over the network as part of the
+target's network bootstrap process, while the USB scraper is loaded from
+disk. The pxedump utility runs on a remote system and requests a memory
+dump from the target using a simple UDP-based protocol. The usbdump utility
+is used to recover a raw memory dump from a disk after it's been written
+out by the target.
+
+The pxedump and usbdump utilities are simple C programs and can be hosted
+on any platform with any C compiler and sockets-based networking. Building
+the scraper binaries is a little more involved, and requires the use of the
+GNU compiler tools.
+
+To build everything in 32-bit mode:
+
+% cd bios_pc
+% make
+
+To build on MinGW in 32-bit mode:
+
+% cd bios_pc
+% make -f Makefile.mingw
+
+Fully supported and tested build platforms for the 32-bit scrapers:
+
+FreeBSD/ia32: any version
+OpenBSD/ia32: any version
+NetBSD/ia32: any version
+Linux/ia32: any distribution, as long as the C compiler is installed
+Windows XP/Vista: as long as the Cygwin or MinGW environment and gcc are installed
+
+Partially supported platforms:
+
+MacOS X: pxedump and usbdump support only
+
+When building the 64-bit versions of the scrapers, you need a version of
+GCC and binutils targeted for x64-64 systems. If you build on a native
+x86-64 host, then you should be able to use the host C compiler (assuming
+it's GCC). If not, you need to build a GCC cross compiler. Instructions
+for doing so are provided in the FAQ file.
+
+To build everything in 64-bit mode:
+
+% make -f Makefile.64
+
+At this time, the only host build system which has been tested for
+the 64-bit scraper code is FreeBSD, however the same cross compilation
+steps should work for other operating systems as well.
+
+Capturing a memory dump over the network:
+
+You will need two pieces of software to get the scraper loaded into a
+target computer: a DHCP server and a TFTP server. Most FreeBSD and Linux
+systems include a TFTP server in their base installations, and a DHCP
+server is often also present by default or can be easily added as an
+option. (TFTP and DHCP servers are also available for Windows.) The DHCP
+server should be configured to hand out leases specifying the file
+file path that can be used to access the scraper utility via TFTP.
+
+The simplest approach is to use a laptop with an ethernet port. Install
+and configure the DHCP and TFTP servers, then connect the laptop to the
+target system using a crossover cable. Once this is done, reboot or
+reset the target computer. (Ideally, you should find a way to reset the
+system without turning off the power, i.e. by forcing a CPU reset.) You
+should try to insure that the BIOS on the target system does not perform
+a destructive memory test when it restarts.
+
+When the target system's BIOS starts up, ask it to boot via network
+instead of from disk. Exactly how this is done varies depending on the
+BIOS implementation. Some systems offer a simple hotkey override ("Press
+F12 to boot from network") while others may require you to enter the
+BIOS configuration utility to enable PXE support and specify the
+network interface as a boot device.
+
+In any case, once the target begins its PXE boot sequence, it will
+begin searching for a DHCP server. Once it obtains a response from your
+laptop, it should download the scraper binary via TFTP and launch it.
+The scraper will print some status messages and then wait for a handshake
+from the pxedump utility. Note that the scraper will use the IP address
+obtained by PXE from your DHCP server.
+
+At this point, you can run the pxedump utility on your laptop system
+as follows:
+
+% pxedump [IP address of target system] > memorydump.dat
+
+The dumper should begin copying the target's memory to disk. This dump
+will include the 640K of lower memory and all extended memory (up to
+3.5GB). Once the dump completes, the scraper will attempt to power off
+the target system using APM. If this fails (i.e. no APM BIOS is present).
+it will reboot the target instead.
+
+Capturing a memory dump on a disk:
+
+To use the USB based memory scraper, you need a disk device large enough
+to hold a dump from the RAM of your target system. The device can be anything
+really, as long as the target system's BIOS supports it as a boot device.
+USB mass storage devices are good candidates: these include USB thumb drives,
+USB SD card and compactflash card readers (with appropriate media attached)
+and ordinary hard disks in USB disk enclosures.
+
+Once you've selected a device, connect it to a host system and dump the
+scraper binary to it. On UNIX/Linux systems, this can be done with the
+dd(1) command:
+
+# dd if=scraper.bin of=/dev/diskdev
+
+No special formatting of the disk is needed: the disk will now function as
+a standalone memory capture device. To use it, connect it to the USB port of
+a target system, reset it, and then set the system to boot from USB (this
+may require changing some settings in the BIOS setup menus). As soon as the
+target boots, it will load the scraper program and begin dumping all available
+RAM to to the USB device. Once it completes, it will turn off the system (or
+reset it if APM power off is not support it).
+
+To recover the memory dump, connect the disk to your host system again, and
+use the usbdump utility to extract the dump image:
+
+# usbdump /dev/diskdev > memorydump.dat
+
+Using the USB tools on Windows is complicated somewhat by the fact that
+Windows doesn't allow you to directly access raw disk devices in the same
+way that UNIX/Linux does. To get around this, you can use a Windows version
+of the dd(1) utility, available from here:
+
+http://www.chrysocome.net/dd
