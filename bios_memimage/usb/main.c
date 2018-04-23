@@ -158,12 +158,13 @@ _main(void)
 	    __DATE__, __TIME__);
 #endif
 
-	if (checkA20() != 0) {
+	//crashing
+	/*if (checkA20() != 0) {
 #ifndef SILENT
 		printf("Failed to set A20 line, aborting.\n");
 #endif
 		return;
-	}
+	}*/
 
 	/* Figure out how much RAM is available  */
 
