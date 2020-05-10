@@ -177,10 +177,15 @@ s2:
 #ifndef SILENT
 	/* If the main routine returns, reboot the system. */
 
+#ifndef halt_only
 	push	$reboot
+#else
+	push	$halting
+#endif
 	call	FUNC(printf)
 #endif
 
+#ifndef halt_only
 	/* Try to do a powerdown first. */
 
 	call	FUNC(bios_apm_shutdown)
@@ -194,6 +199,8 @@ s2:
 	sti
 	lidt	EXT(IDESC)
 	int	$0x6
+
+#endif
 
 	/* If that didn't work, just hang. */
 
@@ -224,6 +231,11 @@ d2:
 
 #ifndef SILENT
 	.data
+#ifndef halt_only
 reboot:
 	.string "Rebooting...\n"
+#else
+halting:
+	.string "Halting...\n"
+#endif
 #endif

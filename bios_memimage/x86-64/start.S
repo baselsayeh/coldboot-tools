@@ -219,10 +219,15 @@ s3:
 #ifndef SILENT
 	/* If the main routine returns, reboot the system. */
 
+#ifndef halt_only
 	mov	$reboot, %rdi
+#else
+	mov	$halting, %rdi
+#endif
 	call	FUNC(printf)
 #endif
 
+#ifndef halt_only
 	/*
 	 * If that didn't work, triple fault the CPU to reset.
 	 * Load an empty IDT and then trigger an illegal instruction
@@ -232,6 +237,7 @@ s3:
 	sti
 	lidt	EXT(IDESC)
 	int	$0x6
+#endif
 
 	/* If that didn't work, just hang. */
 
@@ -262,8 +268,13 @@ d2:
 
 #ifndef SILENT
 	.data
+#ifndef halt_only
 reboot:
 	.string "Rebooting...\n"
+#else
+halting:
+	.string "Halting...\n"
+#endif
 #endif
 
 /*
