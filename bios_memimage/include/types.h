@@ -30,7 +30,10 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#define NULL (void *)0
+#include <stdint.h>
+#include <stddef.h>
+
+//#define NULL (void *)0
 #define NBBY 8
 #define CHAR_BIT	NBBY
 
@@ -41,31 +44,43 @@
 typedef int __attribute__((__mode__(__DI__)))           int64_t;
 typedef unsigned int __attribute__((__mode__(__DI__)))  uint64_t;
 #else
-typedef unsigned long long uint64_t;
-typedef long long int64_t;
+/*typedef unsigned long long uint64_t;
+typedef long long int64_t;*/
 #endif
 
-typedef unsigned int uint32_t;
+/*typedef unsigned int uint32_t;
 typedef unsigned short uint16_t;
 typedef unsigned char uint8_t;
 
 typedef int int32_t;
 typedef short int16_t;
-typedef char int8_t;
+typedef char int8_t;*/
 
-typedef uint16_t u_short;
+/*typedef uint16_t u_short;
 typedef uint8_t u_char;
-typedef uint32_t u_long;
-typedef int32_t u_int;
-typedef int32_t intptr_t;
+typedef uint32_t u_long;*/
+typedef unsigned short u_short;
+typedef unsigned char u_char;
+typedef unsigned long u_long;
+typedef int u_int;
+
+/*typedef int32_t intptr_t;
 typedef unsigned long uintptr_t;
 typedef uint64_t uintmax_t;
-typedef int64_t intmax_t;
+typedef int64_t intmax_t;*/
+
 typedef int64_t quad_t;
 typedef uint64_t u_quad_t;
-typedef uint32_t ptrdiff_t;
-typedef uint32_t size_t;
+/*typedef uint32_t ptrdiff_t;
+typedef uint32_t size_t;*/
+
+#if UINTPTR_MAX == 0xffffffff
+typedef uint32_t off_t;
+#elif UINTPTR_MAX == 0xffffffffffffffff
 typedef uint64_t off_t;
+#else
+#error "Unknown ???"
+#endif
 
 typedef uint64_t p4_entry_t;
 typedef uint64_t p3_entry_t;
