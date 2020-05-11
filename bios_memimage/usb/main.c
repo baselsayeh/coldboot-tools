@@ -38,7 +38,8 @@
 
 #define CHUNK_SIZE 32768
 
-static char page[] = { 0 };
+//static char page[] = { 0 };
+off_t page = 0x80000; // at 512kb (the first 1MB will already be dumped)
 static int checkA20 (void);
 static int dump_seg (off_t, off_t, size_t);
 static struct bios_smap bmap[32];

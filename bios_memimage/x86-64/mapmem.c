@@ -58,14 +58,14 @@ p2_entry_t * l2map = (p2_entry_t *)PAGE_TABLES;
 
 void mapmem (void)
 {
-	int		i;
+	uint64_t		i;
 
 	bzero ((char *)l2map, sizeof(p2_entry_t) * 512 * MAPS);
 
 	/* Populate page tables */
 
 	for (i = 0; i < PTES * MAPS; i++) {
-		l2map[i] = (512 + i) * (2 * 1024 * 1024);
+		l2map[i] = (512 + i) * (2 * 1024 * 1024); // & 0x7fffffffffe00000
 		l2map[i] |= PG_V | PG_RW | PG_PS | PG_U;
 	}
 
