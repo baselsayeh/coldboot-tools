@@ -221,10 +221,11 @@ s3:
 
 #ifndef halt_only
 	mov	$reboot, %rdi
+	call	FUNC(printf)
 #else
 	mov	$halting, %rdi
 #endif
-	call	FUNC(printf)
+	//call	FUNC(printf)
 #endif
 
 #ifndef halt_only
