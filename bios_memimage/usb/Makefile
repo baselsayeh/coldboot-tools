@@ -2,7 +2,7 @@ OBJS= ../i386/start.o data.o disk.o main.o
 
 BOOTOBJS= boot.o
 
-CFLAGS= -ffreestanding -O0 -Wall -I../include -march=i386
+CFLAGS= -ffreestanding -O0 -Wall -I../include -march=i386 $(ADDITIONAL_CFLAGS)
 LDFLAGS= -L../stand -lstand -L../i386 -li386
 ASFLAGS= -I../include
 

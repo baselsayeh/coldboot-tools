@@ -1,6 +1,6 @@
 OBJS= ../i386/start.o data.o pxeapi.o main.o
 
-CFLAGS= -ffreestanding -Os -Wall -I../include -march=i386
+CFLAGS= -ffreestanding -Os -Wall -I../include -march=i386 $(ADDITIONAL_CFLAGS)
 LDFLAGS= -L../stand -lstand -L../i386 -li386
 ASFLAGS= -I../include
 

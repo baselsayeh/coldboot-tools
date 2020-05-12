@@ -4,8 +4,8 @@ include ../mk.64
 OBJS=	start.o page.o long.o bios_generic.o bios_pxe.o bios_disk.o pxecall.o
 OBJS+=	bcopy.o mapmem.o
 
-CFLAGS= -ffreestanding -Os -I../include -Wall -march=x86-64
-CFLAGS32= -Os -I../include -march=i386
+CFLAGS= -ffreestanding -Os -I../include -Wall -march=x86-64 $(ADDITIONAL_CFLAGS)
+CFLAGS32= -Os -I../include -march=i386 $(ADDITIONAL_CFLAGS)
 
 ASFLAGS= -I../include
 

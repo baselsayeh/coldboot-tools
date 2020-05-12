@@ -1,7 +1,7 @@
 
 OBJS=	start.o prot.o pxecall.o bios_generic.o bios_pxe.o bios_disk.o bcopy.o
 
-CFLAGS= -ffreestanding -Os -I../include -Wall -march=i386
+CFLAGS= -ffreestanding -Os -I../include -Wall -march=i386 $(ADDITIONAL_CFLAGS)
 ASFLAGS= -I../include
 
 libi386.o: $(OBJS)

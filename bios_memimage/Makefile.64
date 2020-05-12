@@ -1,3 +1,7 @@
+
+ADDITIONAL_CFLAGS= -mno-red-zone -mno-mmx -mno-sse -mno-sse2 -mno-sse3 -mno-sse4
+export
+
 all: subdirstand subdirx86-64 subdirpxe subdirusb subdirpxedump subdirusbdump
 
 subdirstand:
@@ -5,7 +9,7 @@ subdirstand:
 
 subdirx86-64:
 	$(MAKE) -C x86-64
-	
+
 subdirpxe:
 	$(MAKE) -f Makefile.64 -C pxe
 

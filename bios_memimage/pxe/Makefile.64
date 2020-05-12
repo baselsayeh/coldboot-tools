@@ -1,6 +1,6 @@
 OBJS= ../x86-64/start.o data.o pxeapi.o main.o
 
-CFLAGS= -ffreestanding -Os -Wall -I../include -march=x86-64
+CFLAGS= -ffreestanding -Os -Wall -I../include -march=x86-64 $(ADDITIONAL_CFLAGS)
 LDFLAGS= -L../stand -lstand -L../x86-64 -lx86-64
 ASFLAGS= -I../include
 
